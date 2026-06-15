@@ -1,0 +1,21 @@
+{
+  "appId": "com.budtrack.app",
+  "appName": "BudTrack",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "androidScheme": "http"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 1500,
+      "backgroundColor": "#080d17",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#080d17"
+    }
+  }
+}

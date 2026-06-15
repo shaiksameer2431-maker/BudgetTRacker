@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description"
+    content="BudTrack v6 — Industrial-grade personal budget tracker. Set monthly budgets, log expenses by category, and get a detailed end-of-month analysis." />
+  <meta name="theme-color" content="#0a0f1a" />
+  <title>BudTrack — Smart Budget Tracker</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>💰</text></svg>">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Design System -->
+  <link rel="stylesheet" href="budtrack_styles.css" />
+</head>
+
+<body>
+
+  <div class="app-wrapper">
+    <div class="app-shell" id="appShell">
+
+
+      <!-- ══════════════════════════════════════════════
+       SCREEN 0: ONBOARDING
+       ══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-onboard">
+        <div class="onboard-bg">
+          <div class="onboard-orb orb1"></div>
+          <div class="onboard-orb orb2"></div>
+          <div class="onboard-orb orb3"></div>
+        </div>
+
+        <div class="onboard-content">
+          <div class="onboard-logo">
+            <div class="onboard-logo-icon">💰</div>
+            <div class="onboard-logo-name">BudTrack</div>
+            <div class="onboard-logo-sub">Your Smart Money Companion</div>
+          </div>
+
+          <!-- Step 1: Name -->
+          <div class="onboard-step" id="ob-step-1">
+            <div class="ob-step-label">Step 1 of 3</div>
+            <div class="ob-step-dots">
+              <span class="ob-dot active"></span>
+              <span class="ob-dot"></span>
+              <span class="ob-dot"></span>
+            </div>
+            <h2 class="ob-title">What should we call you?</h2>
+            <p class="ob-sub">Personalise your experience</p>
+            <input class="ob-input" id="ob-name" type="text" placeholder="Your name" maxlength="30"
+              autocomplete="off" />
+            <button class="ob-btn" onclick="obNext(1)">Continue →</button>
+          </div>
+
+          <!-- Step 2: Budget -->
+          <div class="onboard-step hidden" id="ob-step-2">
+            <div class="ob-step-label">Step 2 of 3</div>
+            <div class="ob-step-dots">
+              <span class="ob-dot"></span>
+              <span class="ob-dot active"></span>
+              <span class="ob-dot"></span>
+            </div>
+            <h2 class="ob-title">What's your monthly budget?</h2>
+            <p class="ob-sub">You can change this anytime in Settings</p>
+            <div class="ob-currency-row">
+              <select class="ob-select" id="ob-currency">
+                <option value="₹">₹ INR</option>
+                <option value="$">$ USD</option>
+                <option value="€">€ EUR</option>
+                <option value="£">£ GBP</option>
+                <option value="¥">¥ JPY</option>
+              </select>
+              <input class="ob-input" id="ob-budget" type="number" placeholder="e.g. 15000" min="1" />
+            </div>
+            <button class="ob-btn" onclick="obNext(2)">Continue →</button>
+            <button class="ob-btn-ghost" onclick="obBack(2)">← Back</button>
+          </div>
+
+          <!-- Step 3: Period -->
+          <div class="onboard-step hidden" id="ob-step-3">
+            <div class="ob-step-label">Step 3 of 3</div>
+            <div class="ob-step-dots">
+              <span class="ob-dot"></span>
+              <span class="ob-dot"></span>
+              <span class="ob-dot active"></span>
+            </div>
+            <h2 class="ob-title">When does your budget period start?</h2>
+            <p class="ob-sub">Usually the 1st of each month</p>
+            <select class="ob-select wide" id="ob-period-start" onchange="onPeriodChange(this)">
+              <option value="1">1st of the month</option>
+              <option value="15">15th of the month</option>
+              <option value="custom">Custom date</option>
+            </select>
+            <div id="ob-custom-date-row" class="ob-custom-date-row hidden">
+              <label class="ob-custom-label">Choose your start date</label>
+              <input class="ob-input" id="ob-custom-date" type="date" style="font-size:14px;text-align:left;" />
+            </div>
+            <div class="ob-ready-box">
+              <span class="ob-ready-icon">✅</span>
+              <span id="ob-ready-text">All set! Let's start tracking.</span>
+            </div>
+            <button class="ob-btn" id="ob-start-btn" onclick="completeOnboarding()">🚀 Start Tracking</button>
+            <button class="ob-btn-ghost" onclick="obBack(3)">← Back</button>
+          </div>
+        </div>
+      </div><!-- /screen-onboard -->
+
+
+      <!-- ══════════════════════════════════════════════
+       SCREEN 1: HOME
+       ══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-home">
+
+
+
+        <!-- Header -->
+        <div class="home-header">
+          <div class="home-greeting">
+            <div class="home-hello" id="homeGreeting">Good morning</div>
+            <div class="home-username" id="homeUsername">👋 Welcome</div>
+          </div>
+          <div class="home-header-actions">
+            <div class="report-badge" id="reportBadge" onclick="goTo('screen-report')" style="display:none">
+              <span>📊</span><span class="badge-dot"></span>
+            </div>
+            <div class="settings-btn" onclick="goTo('screen-settings')">⚙️</div>
+          </div>
+        </div>
+
+        <!-- Health score + pill -->
+        <div class="top-pill" onclick="goTo('screen-budget')">
+          <div class="pill-left">
+            <div class="pill-label">Daily allowance</div>
+            <div class="pill-amount" id="pillAmount">0.00</div>
+          </div>
+          <div class="pill-right">
+            <div class="health-badge" id="healthBadge">A</div>
+            <div class="pill-sub" id="pillSub">per day left</div>
+          </div>
+        </div>
+
+        <!-- Budget Tabs -->
+        <div class="budget-tabs" id="budgetTabsHome">
+          <div class="budget-tab active" data-key="Personal" onclick="switchBudget(this,'Personal')">👤 Personal</div>
+          <div class="budget-tab" data-key="Trip" onclick="switchBudget(this,'Trip')">✈️ Trip</div>
+          <div class="budget-tab" data-key="Work" onclick="switchBudget(this,'Work')">💼 Work</div>
+          <div class="budget-tab new-tab" onclick="showAddBudgetModal()">+ New</div>
+        </div>
+
+        <!-- Running Sum -->
+        <div class="running-sum" id="runningSum">
+          <div class="rs-left">
+            <div class="rs-label">Today so far</div>
+            <div class="rs-items" id="rsSub">0 entries</div>
+          </div>
+          <div class="rs-right">
+            <div class="rs-amount" id="rsAmount">0.00</div>
+            <div class="rs-month" id="rsMonthPct">0% of budget</div>
+          </div>
+        </div>
+
+        <!-- AI Card -->
+        <div class="ai-card" id="aiCard">
+          <div class="ai-header">
+            <span class="ai-sparkle">✨</span>
+            <span class="ai-chip">AI Insight</span>
+            <span class="ai-time" id="aiTime"></span>
+          </div>
+          <div class="ai-text" id="aiText">Add your first expense to get personalised insights.</div>
+        </div>
+
+        <!-- Entry List -->
+        <div class="entries-area" id="entriesArea"></div>
+
+        <!-- Floating Action Button -->
+        <div class="home-fab" id="homeFab" onclick="toggleKeypad(true)">
+          <span>+</span>
+        </div>
+
+        <!-- Keypad -->
+        <div class="keypad-area" id="keypadArea">
+          <div class="kp-drag-handle" id="kpDragHandle" onclick="toggleKeypad(false)">
+            <div class="kp-drag-bar"></div>
+          </div>
+          <div class="kp-top-row">
+            <div class="keypad-display" id="kpDisplay">0</div>
+            <div class="kp-display-hint" id="kpDisplayHint"></div>
+          </div>
+
+          <div class="kp-tag-row" id="tagRow">
+            <div class="kp-tag sel" data-tag="Food" onclick="selTag(this,'Food')">🍔 Food</div>
+            <div class="kp-tag" data-tag="Transport" onclick="selTag(this,'Transport')">🚗 Transport</div>
+            <div class="kp-tag" data-tag="Coffee" onclick="selTag(this,'Coffee')">☕ Coffee</div>
+            <div class="kp-tag" data-tag="Shopping" onclick="selTag(this,'Shopping')">🛍️ Shopping</div>
+            <div class="kp-tag" data-tag="Bills" onclick="selTag(this,'Bills')">📄 Bills</div>
+            <div class="kp-tag" data-tag="Health" onclick="selTag(this,'Health')">💊 Health</div>
+            <div class="kp-tag" data-tag="Entertainment" onclick="selTag(this,'Entertainment')">🎬 Entertainment</div>
+            <div class="kp-tag" data-tag="Other" onclick="selTag(this,'Other')">📦 Other</div>
+          </div>
+
+          <input class="kp-note" id="kpNote" placeholder="Add a note (optional)" autocomplete="off" />
+
+          <div class="kp-grid">
+            <button class="kp-btn" onclick="kpPress('7')">7</button>
+            <button class="kp-btn" onclick="kpPress('8')">8</button>
+            <button class="kp-btn" onclick="kpPress('9')">9</button>
+            <button class="kp-btn kp-del" onclick="kpDel()">⌫</button>
+
+            <button class="kp-btn" onclick="kpPress('4')">4</button>
+            <button class="kp-btn" onclick="kpPress('5')">5</button>
+            <button class="kp-btn" onclick="kpPress('6')">6</button>
+            <button class="kp-btn kp-confirm" onclick="kpConfirm()" id="kpConfirmBtn">✓</button>
+
+            <button class="kp-btn" onclick="kpPress('1')">1</button>
+            <button class="kp-btn" onclick="kpPress('2')">2</button>
+            <button class="kp-btn" onclick="kpPress('3')">3</button>
+
+            <button class="kp-btn kp-zero" onclick="kpPress('0')">0</button>
+            <button class="kp-btn" onclick="kpPress('.')">.</button>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item active" data-screen="screen-home" onclick="goTo('screen-home')">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Home</div>
+          </div>
+          <div class="nav-item" data-screen="screen-budget" onclick="goTo('screen-budget')">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">Budget</div>
+          </div>
+          <div class="nav-item" data-screen="screen-insights" onclick="goTo('screen-insights')">
+            <div class="nav-icon">✨</div>
+            <div class="nav-label">Insights</div>
+          </div>
+          <div class="nav-item" data-screen="screen-recurring" onclick="goTo('screen-recurring')">
+            <div class="nav-icon">🔁</div>
+            <div class="nav-label">Recurring</div>
+          </div>
+          <div class="nav-item" data-screen="screen-report" onclick="goTo('screen-report')">
+            <div class="nav-icon">📈</div>
+            <div class="nav-label">Report</div>
+          </div>
+        </div>
+      </div><!-- /screen-home -->
+
+
+      <!-- ══════════════════════════════════════════════
+       SCREEN 2: BUDGET
+       ══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-budget">
+
+        <div class="screen-header">
+          <div class="sh-back" onclick="goTo('screen-home')" id="budgetBackBtn">←</div>
+          <div class="sh-title">Budget</div>
+          <div class="sh-action" onclick="showEditBudgetModal()">Edit</div>
+        </div>
+
+        <!-- Budget Tabs (mirrors home) -->
+        <div class="budget-tabs" id="budgetTabsBudget">
+          <div class="budget-tab active" data-key="Personal" onclick="switchBudget(this,'Personal')">👤 Personal</div>
+          <div class="budget-tab" data-key="Trip" onclick="switchBudget(this,'Trip')">✈️ Trip</div>
+          <div class="budget-tab" data-key="Work" onclick="switchBudget(this,'Work')">💼 Work</div>
+          <div class="budget-tab new-tab" onclick="showAddBudgetModal()">+ New</div>
+        </div>
+
+        <div class="budget-card glass-card">
+          <div class="bc-top">
+            <div>
+              <div class="bc-spent" id="bcSpent">0.00</div>
+              <div class="bc-label" id="bcLabel">spent of ₹100</div>
+            </div>
+            <div class="bc-ring-wrap">
+              <svg class="bc-ring" viewBox="0 0 36 36">
+                <circle class="bc-ring-bg" cx="18" cy="18" r="15.9" />
+                <circle class="bc-ring-fill" id="bcRingFill" cx="18" cy="18" r="15.9" stroke-dasharray="0 100" />
+              </svg>
+              <div class="bc-ring-pct" id="bcRingPct">0%</div>
+            </div>
+          </div>
+          <div class="bc-bar-bg">
+            <div class="bc-bar-fill" id="bcBar" style="width:0%"></div>
+          </div>
+          <div class="bc-meta">
+            <div class="bc-meta-item">
+              <div class="bc-meta-val" id="bcLeft">0.00</div>
+              <div class="bc-meta-lbl">remaining</div>
+            </div>
+            <div class="bc-meta-item">
+              <div class="bc-meta-val" id="bcDaysLeft">—</div>
+              <div class="bc-meta-lbl">days left</div>
+            </div>
+            <div class="bc-meta-item">
+              <div class="bc-meta-val" id="bcPerDay">—</div>
+              <div class="bc-meta-lbl">per day</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="budget-actions">
+          <div class="ba-btn primary" onclick="showAddFundsModal()">+ Add funds</div>
+          <div class="ba-btn secondary" onclick="showEditBudgetModal()">Change budget</div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-cell">
+            <div class="stat-val" id="stTotal">0</div>
+            <div class="stat-lbl">entries</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-val" id="stAvg">0.00</div>
+            <div class="stat-lbl">avg/entry</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-val" id="stDays">0</div>
+            <div class="stat-lbl">days used</div>
+          </div>
+        </div>
+
+        <div class="entries-area" id="budgetEntriesArea" style="border-top:1px solid var(--border);padding-top:8px">
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item" data-screen="screen-home" onclick="goTo('screen-home')">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Home</div>
+          </div>
+          <div class="nav-item active" data-screen="screen-budget">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">Budget</div>
+          </div>
+          <div class="nav-item" data-screen="screen-insights" onclick="goTo('screen-insights')">
+            <div class="nav-icon">✨</div>
+            <div class="nav-label">Insights</div>
+          </div>
+          <div class="nav-item" data-screen="screen-recurring" onclick="goTo('screen-recurring')">
+            <div class="nav-icon">🔁</div>
+            <div class="nav-label">Recurring</div>
+          </div>
+          <div class="nav-item" data-screen="screen-report" onclick="goTo('screen-report')">
+            <div class="nav-icon">📈</div>
+            <div class="nav-label">Report</div>
+          </div>
+        </div>
+      </div><!-- /screen-budget -->
+
+
+      <!-- ══════════════════════════════════════════════
+       SCREEN 3: INSIGHTS
+       ══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-insights">
+
+        <div class="screen-header">
+          <div class="sh-back" onclick="goTo('screen-home')">←</div>
+          <div class="sh-title">AI Insights</div>
+        </div>
+
+        <div class="insights-chart-card glass-card">
+          <div class="insights-chart-label">Spending — last 7 days</div>
+          <canvas id="sparkChart" height="90"></canvas>
+        </div>
+
+        <div class="insight-list" id="insightList"></div>
+
+        <div style="margin:12px 14px">
+          <button class="ai-full-btn" onclick="openAIPrompt()">
+            Ask AI for full analysis ↗
+          </button>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item" data-screen="screen-home" onclick="goTo('screen-home')">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Home</div>
+          </div>
+          <div class="nav-item" data-screen="screen-budget" onclick="goTo('screen-budget')">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">Budget</div>
+          </div>
+          <div class="nav-item active" data-screen="screen-insights">
+            <div class="nav-icon">✨</div>
+            <div class="nav-label">Insights</div>
+          </div>
+          <div class="nav-item" data-screen="screen-recurring" onclick="goTo('screen-recurring')">
+            <div class="nav-icon">🔁</div>
+            <div class="nav-label">Recurring</div>
+          </div>
+          <div class="nav-item" data-screen="screen-report" onclick="goTo('screen-report')">
+            <div class="nav-icon">📈</div>
+            <div class="nav-label">Report</div>
+          </div>
+        </div>
+      </div><!-- /screen-insights -->
+
+
+      <!-- ══════════════════════════════════════════════
+       SCREEN 4: RECURRING
+       ══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-recurring">
+
+        <div class="screen-header">
+          <div class="sh-back" onclick="goTo('screen-home')">←</div>
+          <div class="sh-title">Recurring Expenses</div>
+        </div>
+
+        <div class="section-pad">Scheduled recurring expenses. Toggle to activate or pause. Active items are auto-logged at the start of each month.</div>
+
+        <div id="recurringList"></div>
+
+        <button class="add-btn" onclick="showAddRecurringModal()">+ Add recurring expense</button>
+
+        <div class="bottom-nav">
+          <div class="nav-item" data-screen="screen-home" onclick="goTo('screen-home')">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Home</div>
+          </div>
+          <div class="nav-item" data-screen="screen-budget" onclick="goTo('screen-budget')">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">Budget</div>
+          </div>
+          <div class="nav-item" data-screen="screen-insights" onclick="goTo('screen-insights')">
+            <div class="nav-icon">✨</div>
+            <div class="nav-label">Insights</div>
+          </div>
+          <div class="nav-item active" data-screen="screen-recurring">
+            <div class="nav-icon">🔁</div>
+            <div class="nav-label">Recurring</div>
+          </div>
+          <div class="nav-item" data-screen="screen-report" onclick="goTo('screen-report')">
+            <div class="nav-icon">📈</div>
+            <div class="nav-label">Report</div>
+          </div>
+        </div>
+      </div><!-- /screen-recurring -->
+
+
+      <!-- ══════════════════════════════════════════════
+       SCREEN 5: SETTINGS
+       ══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-settings">
+
+        <div class="screen-header">
+          <div class="sh-back" onclick="goTo('screen-home')">←</div>
+          <div class="sh-title">Settings</div>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="profile-card glass-card">
+          <div class="profile-avatar" id="profileAvatar">😊</div>
+          <div class="profile-info">
+            <div class="profile-name" id="profileName">User</div>
+            <div class="profile-sub" id="profileSub">BudTrack member</div>
+          </div>
+          <div class="profile-edit" onclick="showEditProfileModal()">Edit</div>
+        </div>
+
+        <!-- Preferences -->
+        <div class="settings-section">
+          <div class="settings-label">Preferences</div>
+          <div class="settings-row" onclick="showCurrencyModal()">
+            <span class="sr-icon">💱</span>
+            <span class="sr-label">Currency</span>
+            <span class="sr-value" id="settingsCurrency">₹ INR</span>
+            <span class="sr-arrow">›</span>
+          </div>
+          <div class="settings-row" onclick="showBudgetSetModal()">
+            <span class="sr-icon">🎯</span>
+            <span class="sr-label">Monthly Budget</span>
+            <span class="sr-value" id="settingsBudget">₹0</span>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+
+        <!-- Appearance / Theme -->
+        <div class="settings-section">
+          <div class="settings-label">Appearance</div>
+          <div class="settings-row" onclick="showThemeModal()" id="themeSettingsRow">
+            <span class="sr-icon">🎨</span>
+            <span class="sr-label">App Theme</span>
+            <span class="sr-value" id="settingsThemeBadge">
+              <span class="theme-current-badge" id="themeCurrentBadge">Default Dark</span>
+            </span>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="settings-section">
+          <div class="settings-label">Notifications</div>
+          <div class="settings-row">
+            <span class="sr-icon">🔔</span>
+            <span class="sr-label">Daily reminder (9 pm)</span>
+            <div class="sr-toggle on" id="toggle-dailyReminder" onclick="toggleSetting('dailyReminder', this)"></div>
+          </div>
+          <div class="settings-row">
+            <span class="sr-icon">⚠️</span>
+            <span class="sr-label">Budget 75% alert</span>
+            <div class="sr-toggle on" id="toggle-budgetAlert" onclick="toggleSetting('budgetAlert', this)"></div>
+          </div>
+          <div class="settings-row">
+            <span class="sr-icon">📋</span>
+            <span class="sr-label">Month-end summary</span>
+            <div class="sr-toggle on" id="toggle-periodSummary" onclick="toggleSetting('periodSummary', this)"></div>
+          </div>
+        </div>
+
+        <!-- Report -->
+        <div class="settings-section">
+          <div class="settings-label">Monthly Report</div>
+          <div class="settings-row" onclick="goTo('screen-report')">
+            <span class="sr-icon">📈</span>
+            <span class="sr-label">View Monthly Report</span>
+            <span class="sr-value" id="reportMonthLabel">April 2026</span>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+
+        <!-- Data -->
+        <div class="settings-section">
+          <div class="settings-label">Data</div>
+          <div class="settings-row" onclick="exportCSV()">
+            <span class="sr-icon">⬇️</span>
+            <span class="sr-label">Export all data (CSV)</span>
+            <span class="sr-arrow">›</span>
+          </div>
+          <div class="settings-row" onclick="exportMonthlyReport()">
+            <span class="sr-icon">📄</span>
+            <span class="sr-label">Export monthly report (CSV)</span>
+            <span class="sr-arrow">›</span>
+          </div>
+          <div class="settings-row danger-row" onclick="showClearConfirm()">
+            <span class="sr-icon">🗑️</span>
+            <span class="sr-label" style="color:var(--red)">Clear all data</span>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div class="settings-section">
+          <div class="settings-label">About</div>
+          <div class="settings-row">
+            <span class="sr-icon">ℹ️</span>
+            <span class="sr-label">Version</span>
+            <span class="sr-value">6.0.0</span>
+          </div>
+          <div class="settings-row">
+            <span class="sr-icon">⭐</span>
+            <span class="sr-label">Rate BudTrack</span>
+            <span class="sr-arrow">›</span>
+          </div>
+        </div>
+
+        <div style="height:80px"></div>
+
+        <div class="bottom-nav">
+          <div class="nav-item" data-screen="screen-home" onclick="goTo('screen-home')">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Home</div>
+          </div>
+          <div class="nav-item" data-screen="screen-budget" onclick="goTo('screen-budget')">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">Budget</div>
+          </div>
+          <div class="nav-item" data-screen="screen-insights" onclick="goTo('screen-insights')">
+            <div class="nav-icon">✨</div>
+            <div class="nav-label">Insights</div>
+          </div>
+          <div class="nav-item" data-screen="screen-recurring" onclick="goTo('screen-recurring')">
+            <div class="nav-icon">🔁</div>
+            <div class="nav-label">Recurring</div>
+          </div>
+          <div class="nav-item" data-screen="screen-report" onclick="goTo('screen-report')">
+            <div class="nav-icon">📈</div>
+            <div class="nav-label">Report</div>
+          </div>
+        </div>
+      </div><!-- /screen-settings -->
+
+
+      <!-- ══════════════════════════════════════════════
+       SCREEN 6: MONTHLY REPORT
+       ══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-report">
+
+        <div class="screen-header">
+          <div class="sh-back" onclick="goTo('screen-home')">←</div>
+          <div class="sh-title" id="reportTitle">Monthly Report</div>
+          <div class="sh-action" onclick="exportMonthlyReport()">Export</div>
+        </div>
+        <!-- Month Navigator -->
+        <div class="month-nav" id="monthNav">
+          <div class="month-nav-btn" id="monthNavPrev" onclick="shiftReportMonth(-1)">‹</div>
+          <div class="month-nav-label" id="monthNavLabel">April 2026</div>
+          <div class="month-nav-btn" id="monthNavNext" onclick="shiftReportMonth(1)">›</div>
+        </div>
+        <div class="screen-header" style="display:none">
+        </div>
+
+        <!-- Verdict Banner -->
+        <div class="verdict-banner" id="verdictBanner">
+          <div class="verdict-grade" id="verdictGrade">A</div>
+          <div class="verdict-text">
+            <div class="verdict-title" id="verdictTitle">Excellent budgeting!</div>
+            <div class="verdict-sub" id="verdictSub">You stayed well within your budget.</div>
+          </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="report-stat-row" id="reportStatRow">
+          <div class="report-stat">
+            <div class="rs-val" id="rptSpent">₹0</div>
+            <div class="rs-lbl">Total Spent</div>
+          </div>
+          <div class="report-stat">
+            <div class="rs-val" id="rptBudget">₹0</div>
+            <div class="rs-lbl">Monthly Budget</div>
+          </div>
+          <div class="report-stat">
+            <div class="rs-val" id="rptSaved">₹0</div>
+            <div class="rs-lbl" id="rptSavedLbl">Saved</div>
+          </div>
+        </div>
+
+        <!-- Day-by-Day Chart -->
+        <div class="report-section glass-card" style="margin:0 14px 12px">
+          <div class="report-section-title">📅 Daily Spending</div>
+          <canvas id="monthlyBarChart" height="110"></canvas>
+        </div>
+
+        <!-- Category Breakdown -->
+        <div class="report-section glass-card" style="margin:0 14px 12px">
+          <div class="report-section-title">🍩 Category Breakdown</div>
+          <div class="donut-wrap">
+            <canvas id="donutChart" height="150" width="150"></canvas>
+            <div class="donut-center" id="donutCenter">
+              <div class="donut-total" id="donutTotal">₹0</div>
+              <div class="donut-lbl">total</div>
+            </div>
+          </div>
+          <div class="cat-legend" id="catLegend"></div>
+        </div>
+
+        <!-- Top 5 Expenses -->
+        <div class="report-section glass-card" style="margin:0 14px 12px">
+          <div class="report-section-title">🔥 Top 5 Expenses</div>
+          <div id="top5List"></div>
+        </div>
+
+        <!-- Recurring Summary -->
+        <div class="report-section glass-card" style="margin:0 14px 12px">
+          <div class="report-section-title">🔁 Recurring This Month</div>
+          <div id="reportRecurring"></div>
+        </div>
+
+        <!-- AI Tips -->
+        <div class="report-section ai-tips-card" style="margin:0 14px 12px">
+          <div class="report-section-title" style="color:var(--purple)">🤖 AI Recommendations</div>
+          <div id="aiTipsList"></div>
+        </div>
+
+        <!-- Export Actions -->
+        <div class="report-actions">
+          <button class="report-action-btn" onclick="exportMonthlyReport()">⬇️ Download CSV</button>
+          <button class="report-action-btn secondary" onclick="window.print()">🖨️ Print / PDF</button>
+        </div>
+
+        <div style="height:80px"></div>
+
+        <div class="bottom-nav">
+          <div class="nav-item" data-screen="screen-home" onclick="goTo('screen-home')">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Home</div>
+          </div>
+          <div class="nav-item" data-screen="screen-budget" onclick="goTo('screen-budget')">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">Budget</div>
+          </div>
+          <div class="nav-item" data-screen="screen-insights" onclick="goTo('screen-insights')">
+            <div class="nav-icon">✨</div>
+            <div class="nav-label">Insights</div>
+          </div>
+          <div class="nav-item" data-screen="screen-recurring" onclick="goTo('screen-recurring')">
+            <div class="nav-icon">🔁</div>
+            <div class="nav-label">Recurring</div>
+          </div>
+          <div class="nav-item active" data-screen="screen-report">
+            <div class="nav-icon">📈</div>
+            <div class="nav-label">Report</div>
+          </div>
+        </div>
+      </div><!-- /screen-report -->
+
+
+    </div><!-- /app-shell -->
+  </div><!-- /app-wrapper -->
+
+  <!-- Modal container -->
+  <div id="modalContainer"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="budtrack_native.js"></script>
+  <script src="budtrack_logic.js"></script>
+  <script src="budtrack_animations.js"></script>
+
+</body>
+
+</html>
